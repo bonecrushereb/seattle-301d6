@@ -45,17 +45,34 @@ Article.loadAll = function(rawData) {
 // and process it, then hand off control to the View.
 Article.fetchAll = function() {
   if (localStorage.rawData) {
-    // When rawData is already in localStorage,
-    // we can load it by calling the .loadAll function,
-    // and then render the index page (using the proper method on the articleView object).
-    Article.loadAll(localStorage.rawData);//DONE: What do we pass in here to the .loadAll function?
-    articleView.initIndexPage();//(); //DONE: Change this fake method call to the correct one that will render the index page.
+    // Lets get the eTag, and see how it compares with what we have stored.
+    $.ajax({
+      type: 'HEAD',
+      url: '/data/hackerIpsum.json',
+      success: function(data, message, xhr) {
+        console.log(xhr); // see what you are getting back from the server
+        var eTag = xhr.getResponseHeader('eTag');
+        if (!localStorage.eTag || eTag !== localStorage) {
+          localStorage.eTag = eTag;
+          Article.getAll();
+        } else {
+        // When rawData is already in localStorage,
+        // we can load it by calling the .loadAll function,
+        // and then render the index page (using the proper method on the articleView object).
+        Article.loadAll(localStorage.rawData);//DONE: What do we pass in here to the .loadAll function?
+        articleView.initIndexPage(); //DONE: Change this fake method call to the correct one that will render the index page.
+        }
+      }
+    });
   } else {
+    Article.getAll();
+  }
+};
     // DONE: When we don't already have the rawData, we need to:
     // 1. Retrieve the JSON file from the server with AJAX (which jQuery method is best for this?),
-    $.getJSON('/data/hackerIpsum.json', function(rawData){
+    $.getJSON('/data/hackerIpsum.json', function(rawData) {
       Article.loadAll(rawData);
-      localStorage.setItem('rawData', JSON.stringify(rawData));
+      localStorage.rawData = JSON.stringify(rawData);
       articleView.initIndexPage();
     });
     // 2. Store the resulting JSON data with the .loadAll method,
