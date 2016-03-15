@@ -50,26 +50,26 @@
   Article.fetchAll = function(next) {
     if (localStorage.rawData) {
       Article.loadAll(JSON.parse(localStorage.rawData));
-      articleView.initIndexPage();
-      // next();
+      // articleView.initIndexPage();
+      next();
     } else {
       $.getJSON('/data/hackerIpsum.json', function(rawData) {
         Article.loadAll(rawData);
         localStorage.rawData = JSON.stringify(rawData); // Cache the json, so we don't need to request it next time.
-        articleView.initIndexPage();
-        // next();
+        // articleView.initIndexPage();
+        next();
       });
     }
   };
 
-  // TODO: Chain together a `map` and a `reduce` call to get a rough count of all words in all articles.
+  // DONE: Chain together a `map` and a `reduce` call to get a rough count of all words in all articles.
   Article.numWordsAll = function() {
-    return Article.all.map(function() {
-
-      return article.body; // Grab the words from the `article` `body`.
+    return Article.all.map(function(article) {
+      return article.body.match(/\b\w+/g).length;
     })
-      .reduce(function(a, b) {
-        return a + b; // Sum up all the values!
+      // return article.body; // Grab the words from the `article` `body`.
+      .reduce(function(acc, cur) {
+        return acc + cur; // Sum up all the values!
       });
   };
 
@@ -94,10 +94,21 @@
     // TODO: Transform each author string into an object with 2 properties: One for
     // the author's name, and one for the total number of words across the matching articles
     // written by the specified author.
+
+    // name: Article.allAuthors();
     return Article.allAuthors().map(function(author) {
+      // return Article.allAuthors();
       return {
-        // name:
-        // numWords: someCollection.someArrayMethod().map(...).reduce(...), ...
+        name: author,
+        numWords: Article.all.filter(function(words) {
+          return words.author === author;
+        })
+          .map(function(article) {
+            return article.body.match(/\b\w+/g).length;
+          })
+          .reduce(function(acc, cur) {
+            return acc + cur;
+          })
       };
     });
   };
