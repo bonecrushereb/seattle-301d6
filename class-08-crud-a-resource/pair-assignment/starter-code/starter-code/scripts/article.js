@@ -22,12 +22,13 @@
   // DONE: Set up a DB table for articles.
   Article.createTable = function(callback) {
     webDB.execute(
-      'CREATE TABLE IF NOT EXISTS articles (' + 'id INTEGER PRIMARY KEY,'+
+      'CREATE TABLE IF NOT EXISTS articles (' +
+      'id INTEGER PRIMARY KEY, '+
       'title VARCHAR(30), ' +
       'category VARCHAR(30), ' +
       'author VARCHAR(30), ' +
       'authorURL VARCHAR(255), ' +
-      'publishedON INTEGER, ' +
+      'publishedON DATETIME, ' +
       'body TEXT);',
        // what SQL command do we run here inside these quotes?
       function(result) {
@@ -51,7 +52,7 @@
     webDB.execute(
       [
         {
-          'sql': 'INSERT INTO articles (title, category, author, authorURL, publishedON, body) Value(?, ?, ?, ?, ?, ?)',
+          'sql': 'INSERT INTO articles (title, category, author, authorURL, publishedON, body) Value(?, ?, ?, ?, ?, ?);',
           'data': [this.title, this.category, this.author, this.authorURL, this.publishedON, this.body],
         }
       ],
@@ -64,7 +65,7 @@
     webDB.execute(
       [
         {
-          'sql': 'DELETE FROM articles WHERE id = ?',
+          'sql': 'DELETE FROM articles WHERE id = ?;',
           'data': [this.id],
           /* ... */
         }
@@ -78,8 +79,8 @@
     webDB.execute(
       [
         {
-          'sql': 'UPDATE articles SET Title = ?, Category = ?, Author = ?, AuthorUrl = ?, PublishedOn = ?, Body = ? WHERE Id = ?',
-          'data': [this.title, this.category, this.author, this.authorUrl, this.publishedOn, this.body, this.Id],
+          'sql': 'UPDATE articles SET title = ?, category = ?, author = ?, authorUrl = ?, publishedOn = ?, body = ? WHERE id = ?;',
+          'data': [this.title, this.category, this.author, this.authorUrl, this.publishedOn, this.body, this.id],
          /* ... */
         }
       ],
@@ -98,7 +99,7 @@
   // we need to retrieve the JSON and process it.
   // If the DB has data already, we'll load up the data (sorted!), and then hand off control to the View.
   Article.fetchAll = function(next) {
-    webDB.execute('SELECT * FROM articles;', function(rows) { // DONE: fill these quotes to 'select' our table.
+    webDB.execute('SELECT * FROM articles ORDER BY publishedOn DESC;', function(rows) { // DONE: fill these quotes to 'select' our table.
       if (rows.length) {
         console.log(rows);
         Article.loadAll(rows);
@@ -155,13 +156,13 @@
           return a.author === author;
         })
         .map(function(a) {
-          return a.body.match(/\b\w+/g).length
+          return a.body.match(/\b\w+/g).length;
         })
         .reduce(function(a, b) {
           return a + b;
         })
-      }
-    })
+      };
+    });
   };
 
   Article.stats = function() {
@@ -170,7 +171,7 @@
       numWords: Article.numwords(),
       Authors: Article.allAuthors(),
     };
-  }
+  };
 
   module.Article = Article;
 })(window);
